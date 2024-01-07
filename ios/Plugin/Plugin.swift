@@ -54,6 +54,11 @@ public class SpeechRecognition: CAPPlugin {
 
         let recognitionRequest = SFSpeechURLRecognitionRequest(url: audioFileURL)
         recognitionRequest.shouldReportPartialResults = false
+        if #available(iOS 16, *) {
+            recognitionRequest.addsPunctuation = true
+        };
+        recognitionRequest.taskHint = SFSpeechRecognitionTaskHint.dictation
+        
 
         recognizer.recognitionTask(with: recognitionRequest) { result, error in
             guard let result = result else {
