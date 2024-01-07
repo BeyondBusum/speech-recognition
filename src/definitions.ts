@@ -31,7 +31,7 @@ export interface SpeechRecognitionPlugin {
    */
   start(options?: UtteranceOptions): Promise<{ matches?: string[] }>;
 
-  processFile(filePath: string): Promise<{ matches?: string[] }>;
+  processFile(_options: ProcessFileOptions): Promise<{ matches?: string[] }>;
   /**
    * This method will stop listening for utterance
    * @param none
@@ -117,4 +117,20 @@ export interface UtteranceOptions {
    * return partial results if found
    */
   partialResults?: boolean;
+}
+
+export interface ProcessFileOptions {
+  /**
+   * key returned from `getSupportedLanguages()`
+   */
+  language?: string;
+  /**
+   * maximum number of results to return (5 is max)
+   */
+  maxResults?: number;
+
+  /**
+   * path to file
+   */
+  file: string;
 }

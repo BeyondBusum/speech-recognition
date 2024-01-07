@@ -1,6 +1,7 @@
 import { WebPlugin } from "@capacitor/core";
 import {
   PermissionStatus,
+  ProcessFileOptions,
   SpeechRecognitionPlugin,
   UtteranceOptions,
 } from "./definitions";
@@ -9,7 +10,7 @@ export class SpeechRecognitionWeb
   extends WebPlugin
   implements SpeechRecognitionPlugin
 {
-  processFile(_: string): Promise<{ matches?: string[] }> {
+  processFile(_options: ProcessFileOptions): Promise<{ matches?: string[] }> {
     throw this.unimplemented("Method not implemented on web.");
   }
   removeAllListeners(): Promise<void> {
