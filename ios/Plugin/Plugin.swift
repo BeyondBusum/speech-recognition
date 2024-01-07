@@ -32,6 +32,79 @@ public class SpeechRecognition: CAPPlugin {
             "available": recognizer.isAvailable
         ])
     }
+    
+    @objc func processFile(_ call: CAPPluginCall) {
+        if self.audioEngine != nil, self.audioEngine!.isRunning {
+            call.reject(self.MESSAGE_ONGOING)
+            return
+        }
+
+        let status: SFSpeechRecognizerAuthorizationStatus = SFSpeechRecognizer.authorizationStatus()
+        if status != .authorized {
+            call.reject(self.MESSAGE_MISSING_PERMISSION)
+            return
+        }
+
+        let language: String = call.getString("language") ?? "en-US"
+        let maxResults: Int = call.getInt("maxResults") ?? self.DEFAULT_MATCHES
+
+        if self.recognitionTask != nil {
+            self.recognitionTask?.cancel()
+            self.recognitionTask = nil
+        }
+
+        self.audioEngine = AVAudioEngine()
+        let audioSession = AVAudioSession.sharedInstance()
+        
+
+        do {
+            try audioSession.setCategory(AVAudioSession.Category.playAndRecord, options: AVAudioSession.CategoryOptions.defaultToSpeaker)
+            try audioSession.setMode(AVAudioSession.Mode.default)
+            try audioSession.setActive(true, options: AVAudioSession.SetActiveOptions.notifyOthersOnDeactivation)
+        } catch {
+            call.reject(self.MESSAGE_UNKNOWN)
+            return
+        }
+
+        self.speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: language))
+
+        guard let recognizer = self.speechRecognizer else {
+            call.reject(self.MESSAGE_UNKNOWN)
+            return
+        }
+
+        self.recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
+        self.recognitionRequest?.shouldReportPartialResults = false
+
+        let audioFileURL: URL? = URL(string: call.getString("file") ?? "")
+        guard let audioFileURL = audioFileURL else {
+            call.reject("Invalid audio file URL")
+            return
+        }
+
+        do {
+            let audioFile = try AVAudioFile(forReading: audioFileURL)
+            let inputNode = self.audioEngine!.inputNode
+            let format = audioFile.processingFormat
+
+            self.recognitionTask = recognizer.recognitionTask(with: self.recognitionRequest!, resultHandler: { (result, error) in
+                // Handle recognition results and errors as before
+            })
+
+            inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { (buffer, time) in
+                self.recognitionRequest?.append(buffer)
+            }
+
+            self.audioEngine?.prepare()
+            try self.audioEngine?.start()
+
+        
+
+        } catch {
+            call.reject(error.localizedDescription)
+        }
+    }
+    
 
     @objc func start(_ call: CAPPluginCall) {
         if (self.audioEngine != nil) {

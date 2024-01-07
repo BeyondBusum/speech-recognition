@@ -9,6 +9,12 @@ export class SpeechRecognitionWeb
   extends WebPlugin
   implements SpeechRecognitionPlugin
 {
+  processFile(_: string): Promise<{ matches?: string[] }> {
+    throw this.unimplemented("Method not implemented on web.");
+  }
+  removeAllListeners(): Promise<void> {
+    throw this.unimplemented("Method not implemented on web.");
+  }
   available(): Promise<{ available: boolean }> {
     throw this.unimplemented("Method not implemented on web.");
   }

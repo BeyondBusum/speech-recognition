@@ -30,6 +30,8 @@ export interface SpeechRecognitionPlugin {
    * @returns void or array of string results
    */
   start(options?: UtteranceOptions): Promise<{ matches?: string[] }>;
+
+  processFile(filePath: string): Promise<{ matches?: string[] }>;
   /**
    * This method will stop listening for utterance
    * @param none
